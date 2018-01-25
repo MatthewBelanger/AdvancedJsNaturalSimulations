@@ -1,0 +1,131 @@
+angleMode = "radians";
+var gravity = new PVector(0, 0.2);
+
+var Bird = function(position) {
+    this.acl = new PVector(random(-0.01, 0.01), 0);
+    this.vel = new PVector(0, 0);
+    this.pos = position.get();
+    this.lifespan = 450; 
+    this.color = color(201, 18, 201);
+    this.mass = 1.5; 
+    this.time = 0; 
+};
+
+Bird.prototype.applyForce = function(force) {
+    var f = force.get();
+    f.div(this.mass);
+    this.acl.add(f);
+};
+
+Bird.prototype.run = function() {
+    this.update();
+    this.display();
+};
+
+Bird.prototype.update = function() {
+    this.vel.add(this.acl);
+    this.pos.add(this.vel);
+    this.acl.mult(0);
+    this.lifespan -= 1;
+};
+
+Bird.prototype.display = function() {
+    noStroke();
+    fill(this.color);
+    ellipse(this.pos.x, this.pos.y, 10*this.mass, 10*this.mass);
+    stroke(this.color);
+    strokeWeight(2*this.mass);
+    this.angle = sin(this.time) * 0.5;             
+    line(this.pos.x, this.pos.y,           
+    this.pos.x + (7*this.mass*2)*cos(this.angle),
+    this.pos.y + (7*this.mass*2)*sin(this.angle));
+    this.angle = sin(this.time + 3) * 0.5;           
+    line(this.pos.x, this.pos.y,           
+    this.pos.x - (7*this.mass*2)*cos(this.angle), 
+    this.pos.y - (7*this.mass*2)*sin(this.angle));
+    this.time += 0.1;
+};
+
+Bird.prototype.isDead = function() {
+    if (this.lifespan < 0) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+var tinyBird = function(position) {
+    Bird.call(this, position);
+    this.color = color(125, 0, 0);
+    this.mass = 0.8; 
+};
+
+tinyBird.prototype = Object.create(Bird.prototype);
+tinyBird.prototype.constructor = tinyBird;
+
+
+var BSystem = function(position) {
+    this.origin = position.get();
+    this.birds = []; 
+};
+
+BSystem.prototype.addBird = function() {
+    var r = random(1);
+    if (r < 0.005) {
+        this.birds.push(new Bird(this.origin)); // 
+    } else if (r > 0.995) {
+        this.birds.push(new tinyBird(this.origin)); 
+    }
+};
+
+var upForce = new PVector(0, -0.285);
+
+BSystem.prototype.applyForce = function(f) {
+    for(var i = 0; i < this.birds.length; i++) {
+        if (f === upForce && this.birds[i].pos.y < 100) {
+        } else {
+            this.birds[i].applyForce(f);
+        }
+    }
+};
+
+BSystem.prototype.applyGravity = function() {
+    for (var i = 0; i < this.birds.length; i++) {
+        var birdG = gravity.get();
+        birdG.mult(this.birds[i].mass);
+        this.birds[i].applyForce(birdG);
+    }
+};
+
+BSystem.prototype.run = function() {
+    for (var i = this.birds.length -1; i > 0; i--) {
+        var b = this.birds[i];
+        b.run();
+        if (b.isDead()) {
+            this.birds.splice(i, 1);
+        }
+    }
+};
+
+var systems = [];
+    systems.push(new BSystem(new PVector(100, 290)));
+    systems.push(new BSystem(new PVector(300, 290)));
+
+var drawBackground = function() {
+    background(144, 183, 245);
+    fill(41, 176, 43);
+    noStroke();
+    ellipse(200, 390, 500, 200);
+};
+
+draw = function() {
+    drawBackground();
+    
+    
+    for (var i = 0; i < systems.length; i++) {
+        systems[i].applyGravity();
+        systems[i].applyForce(upForce);
+        systems[i].addBird();
+        systems[i].run();
+    }
+};

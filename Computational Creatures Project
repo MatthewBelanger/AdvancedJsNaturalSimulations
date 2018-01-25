@@ -1,0 +1,66 @@
+var maxDir = PVector.sub(new PVector(0,0), new PVector(width, height));
+var maxMag = maxDir.mag();
+
+//creates the creature function
+var Creature = function() {
+    this.position = new PVector(random(width), random(height));
+    this.velocity = new PVector(0, 0);
+    this.acceleration = new PVector(0, 0);
+};
+
+//function for the creature movement
+Creature.prototype.update = function(speed) {
+    var mouse = new PVector(mouseX, mouseY);
+    var dir = PVector.sub(mouse, this.position);
+    var closeness = (maxMag-dir.mag())/maxMag;
+    dir.normalize();
+    dir.mult(closeness);
+    this.acceleration = dir;
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(speed);
+    this.position.add(this.velocity);
+};
+
+//function to dsiplay the creature
+Creature.prototype.display = function(size) {
+image(getImage("avatars/primosaur-ultimate"), this.position.x, this.position.y, size, size);
+};
+
+//makes sure they don't go out of bounds
+Creature.prototype.checkEdges = function() {
+
+  if (this.position.x > width) {
+    this.position.x = 0;
+  } else if (this.position.x < 0) {
+    this.position.x = width;
+  }
+
+  if (this.position.y > height) {
+    this.position.y = 0;
+  } else if (this.position.y < 0) {
+    this.position.y = height;
+  }
+};
+
+//creates all of the creature which are different sizes there size affects their speed
+var creature = new Creature();
+var creature2 = new Creature();
+var creature3 = new Creature();
+var creature4 = new Creature();
+
+draw = function() {
+    background(131, 181, 247);
+    creature.update(6);
+    creature.checkEdges();
+    creature.display(30); 
+    creature2.update(3);
+    creature2.checkEdges();
+    creature2.display(60); 
+    creature3.update(1);
+    creature3.checkEdges();
+    creature3.display(100);
+    creature4.update(10);
+    creature4.checkEdges();
+    creature4.display(10);
+};
+

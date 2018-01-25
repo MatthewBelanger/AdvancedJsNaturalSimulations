@@ -1,0 +1,120 @@
+angleMode = "radians";
+var thrustForce = 2;
+
+var Spaceship = function() {
+    this.position = new PVector(width/2, height/2);
+    this.velocity = new PVector(3, 0);
+    this.acceleration = new PVector(0, 0);
+    this.angle = 0;
+    this.aVelocity = 0;
+    this.aAcceleration = 0;
+    this.aAccelerationNum = 7;
+    this.topspeed = 10;
+};
+
+Spaceship.prototype.update = function () {
+    this.velocity.limit(this.topspeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+        this.aVelocity += this.aAcceleration;
+    this.aVelocity = constrain(this.aVelocity, -this.aAccelerationNum - 4, this.aAccelerationNum + 4);
+    this.angle += this.aVelocity;
+    
+    this.aAcceleration *= 0;
+    
+    if (!keyIsPressed) {
+        this.aVelocity = 0;
+    }
+};
+
+Spaceship.prototype.zoom = function(){
+    var thrustNum = 0.1;
+    var thrust = new PVector(thrustNum * cos(this.angle - 90), thrustNum * sin(this.angle - 90));
+    
+    println(thrust);
+    return thrust;
+};
+
+Spaceship.prototype.applyForce = function(force) {
+    this.acceleration.add(force);
+};
+
+Spaceship.prototype.turnLeft = function() {
+    angleMode = "degree";
+    pushMatrix();
+    this.velocity.rotate(-0.05);
+    popMatrix();
+};
+
+Spaceship.prototype.turnRight = function() {
+    angleMode = "degree";
+    pushMatrix();
+    this.velocity.rotate(0.05);
+    popMatrix();
+};
+
+Spaceship.prototype.display = function () {
+        pushMatrix();
+        var angle = this.velocity.heading();
+        stroke(0, 0, 0);
+        strokeWeight(2);
+        pushMatrix();
+        rectMode(CENTER);
+        translate(this.position.x, this.position.y);
+        rotate(angle);
+        fill(184, 189, 194);
+        rect(-20, -8, 10, 10);
+        rect(-20, 8, 10, 10);
+        fill(175, 201, 240);
+        triangle(20, 0, -20, -20, -20, 20);
+        popMatrix();
+};
+
+// draw the thrusting accelerator
+Spaceship.prototype.drawThrust = function(){
+    pushMatrix();
+        translate(this.position.x,this.position.y);
+        rotate(this.angle);
+        stroke(255, 0, 0);
+        strokeWeight(1);
+        fill(255, 204, 0);
+        triangle(-5, 30, 7, 29, 0, 30+16);
+    popMatrix();
+    
+};
+
+Spaceship.prototype.checkEdges = function () {
+    if (this.position.x > width) {
+        this.position.x = 0;
+    } else if (this.position.x < 0) {
+        this.position.x = width;
+    }
+    
+    if (this.position.y > height) {
+        this.position.y = 0;
+    } else if (this.position.y < 0) {
+        this.position.y = height;
+    }
+};
+
+var ship = new Spaceship();
+
+var keyPressed = function() {
+        if (keyIsPressed && keyCode === LEFT) {
+        ship.turnLeft();
+    } else if (keyIsPressed && keyCode === RIGHT) {
+        ship.turnRight();
+    }
+    else if (keyIsPressed && keyCode === 90){      
+        ship.velocity.add(ship.zoom()); 
+        ship.applyForce(thrustForce);
+    }
+};
+
+draw = function() {
+    background(0, 0, 0);
+    ship.update();
+    ship.checkEdges();
+    ship.display();
+    keyPressed();
+};

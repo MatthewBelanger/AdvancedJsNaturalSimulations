@@ -1,0 +1,67 @@
+background(161, 222, 252);
+
+
+//Draws the clouds using noise
+var zOff = 0.0;
+draw = function() {
+    var xOff = 0.0;
+   for (var x = 0; x < 400; x++) {
+    var yOff = 0.0;
+    for (var y = 0; y < 75; y++) {
+        var bright = map(noise(xOff, yOff, zOff), 0, 1, 0, 250);
+        stroke(bright, bright, bright);
+        point(x, y);
+        yOff += 0.01;
+        
+    }
+    xOff += 0.01;
+    
+} 
+    zOff += 0.015;
+};
+
+//draws the trees randomly on the mountain
+var drawTrees = function(num) {
+     var x, y, size;
+    for(var i=0; i<num; i++){
+    x = Math.floor(Math.random() * (400-0+1)) + 0;   
+    y = Math.floor(Math.random() * (400-270+1)) + 270; 
+    size = Math.floor(Math.random() * (8-2+1)) + 2;
+    noStroke();
+    fill(166, 250, 160);
+    image(getImage("cute/TreeTall"),x, y, size/2, size);
+    }
+};
+//draws the mountains using noise
+var drawRange = function(addHeight, change, r, g, b) {
+    var incAmount = 0.01;
+    for (var t = 0; t < incAmount*width; t += incAmount) {
+        var n = noise(t+change);
+        var y = map(n, 0, 1, 0, height/2);
+        stroke(r, g, b);
+        rect(t*100, height-y-addHeight, 1, y);
+    }
+};
+//draws the birds randomly 
+var drawBirds = function(num){
+    var x, y, size;
+    for(var i=0; i<num; i++){
+    x = Math.floor(Math.random() * (350-0+1)) + 0;   
+    y = Math.floor(Math.random() * (180-75+1)) + 75; 
+    size = Math.floor(Math.random() * (30-5+1)) + 5;
+    stroke(8, 8, 8);
+    fill(161, 222, 252);
+    arc(x, y, size, 0.75*size, 180, 360);
+    arc(x+size, y, size, 0.75*size, 180, 360);
+    }
+};
+
+drawRange(50, 10, 28, 20, 30);
+drawRange(30, 100, 74, 64, 64);
+drawRange(0, 150, 140, 129, 129);
+drawBirds(10);
+drawTrees(30);
+fill(140, 129, 129);
+
+
+

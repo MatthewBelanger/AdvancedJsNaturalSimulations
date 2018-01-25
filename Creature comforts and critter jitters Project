@@ -1,0 +1,143 @@
+var swimC = 210; // this is the coefficient of moving force
+var cofD = 0.26; // this is the coefficient of drag
+var numOfFish = 20; // how many movers there are
+var sizeGen = new Random(1); // the random size generator
+var tankMarg = -20; // used to constrain range of motion
+var vision = 145; // this is the max distance two movers can
+                    // react to each other
+                    
+
+// the mover object
+var Fish = function(x,y,size){
+    this.pos = new PVector(x, y);
+    this.vel = new PVector(0, 0);
+    this.acl = new PVector(0, 0);
+    this.size = size;
+    this.randSwimVect = new PVector(0, 0);
+};
+
+Fish.prototype.applyForce = function(forceG){
+    var a = PVector.div(forceG, this.size);
+    this.acl.add(a);
+};
+
+Fish.prototype.update = function(){
+    this.vel.add(this.acl);
+    this.pos.add(this.vel);
+    this.acl.mult(0);
+    if(this.size < 1){
+        this.size = 0.0;
+    }
+};
+
+Fish.prototype.display = function(){
+    fill(109, 133, 93, 150);
+    ellipse(this.pos.x, this.pos.y, this.size*2, this.size*2);
+};
+
+// this calculates force between two movers.
+/* The bigger fish are pulled to the smaller ones and the small ones are
+repeled from the big ones.  */
+Fish.prototype.calcSwim = function(source){
+    var force = PVector.sub(this.pos, source.pos);
+    var radius = force.mag();
+    force.normalize();
+    force.mult(swimC/(radius*radius + 1));
+    
+    if(radius < vision){ // if two movers are in range, push or pull
+        if(this.size > source.size){
+            return PVector.mult(force,-1);
+        }
+        else{
+            return force;
+        }
+    } else{ // if movers out of range, move randomly
+        this.randSwimVect.x = random(-0.1, 0.1);
+        this.randSwimVect.y = random(-0.1, 0.1);
+        return this.randSwimVect;
+    }
+    
+};
+
+// this calculates drag force
+Fish.prototype.calcDrag = function(){
+    var force = this.vel.get();
+    force.normalize();
+    force.mult(-1);
+    var speed = this.vel.mag();
+    force.mult(speed*speed*cofD);
+    return force;
+};
+
+// this ensures that the movers stay within boundries
+Fish.prototype.checkEdges = function(){
+    
+    if(this.pos.x < 0+tankMarg){
+        this.vel.x *= -1;
+        this.pos.x+=5;
+    }
+    if(this.pos.x > width-tankMarg){
+        this.vel.x *= -1;
+        this.pos.x-=5;
+    }
+    if(this.pos.y < 0+tankMarg){
+        this.vel.y *= -1;
+        this.pos.y+=5;
+    }
+    if(this.pos.y > height-tankMarg){
+        this.vel.y *= -1;
+        this.pos.y-=5;
+    }
+};
+
+
+var fishes = [];
+
+// this creates initial objects
+for(var i = 0; i<numOfFish; i++){
+    fishes[i] = new Fish(random(tankMarg,width-tankMarg), random(tankMarg,height-tankMarg), 4.5*sizeGen.nextGaussian()+9.6);
+}
+
+
+draw = function() {
+    background(209, 255, 251);
+    
+    for(var i = 0; i<fishes.length; i++){
+        
+        // applies forces due to other fish
+        for(var j = 0; j<fishes.length; j++){
+            if(j !== i){
+                var f = fishes[i].calcSwim(fishes[j]);
+                fishes[i].applyForce(f);
+                
+                var distance=PVector.dist(fishes[i].pos,fishes[j].pos);
+                
+                if((distance < (fishes[j].size)) && (fishes[i].size < fishes[j].size)){
+                    fishes[j].size += fishes[i].size/6;
+                    fishes[i].size -= fishes[i].size/1.6;
+                    
+                }
+            }
+        }
+        
+        
+        
+        // applies drag force due to water
+        var drag = fishes[i].calcDrag();
+        fishes[i].applyForce(drag);
+        
+        fishes[i].checkEdges();
+        
+        fishes[i].display();
+        fishes[i].update();
+        
+        
+    }
+    
+    if(random(1) > 0.995){
+        var newFish = new Fish(random(tankMarg,width-tankMarg), random(tankMarg,height-tankMarg), 4.5*sizeGen.nextGaussian()+9.6);
+        fishes.push(newFish);
+        // println(fishes.length);
+    }
+    
+};

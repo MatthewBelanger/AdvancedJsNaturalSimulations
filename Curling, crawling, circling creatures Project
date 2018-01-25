@@ -1,0 +1,63 @@
+angleMode = "radians";
+
+//creates the creature function
+var Bug = function() {
+    this.pos = new PVector(230,200);
+    this.vel = new PVector(0, 0);
+    this.acc = new PVector(0, 0);
+    
+        this.bounce = function(){
+        this.pos.y = 20*sin(TWO_PI*sin(frameCount/60)/5)+200;
+    };
+};
+
+//function to dsiplay the creature
+Bug.prototype.display = function(size) {
+        fill(89, 95, 179);
+        stroke(0, 0, 0);
+        strokeWeight(2);
+        
+
+        
+
+        
+        //wings
+        fill(218, 195, 222);
+        strokeWeight(2);
+        
+        pushMatrix();
+        translate(this.pos.x-28,this.pos.y-12);
+        rotate(2*sin(frameCount/2)/3);
+        ellipse(-32,0,70,12);
+        popMatrix();
+        
+        pushMatrix();
+        translate(this.pos.x-12,this.pos.y-7);
+        rotate(-2*sin(frameCount/2)/3+PI);
+        ellipse(-32,0, 70,14);
+        popMatrix();
+        
+        //head
+        fill(89, 95, 179);
+        ellipse(this.pos.x-30,this.pos.y,30,30);
+        //eyes
+        fill(242, 242, 242);
+        ellipse(this.pos.x-40,this.pos.y-2,12,12);
+        ellipse(this.pos.x-25,this.pos.y-2,12,12);
+        //pupils
+        fill(23, 23, 23);
+        ellipse(this.pos.x-39,this.pos.y-2,4,4);
+        ellipse(this.pos.x-27,this.pos.y-2,4,4);
+        //mouth
+        line(this.pos.x-35,this.pos.y+7,this.pos.x-30,this.pos.y+7);
+};
+
+var bug = new Bug();
+
+draw = function() {
+    background(131, 166, 222);
+    frameRate(60);
+    bug.display(); 
+    bug.bounce();
+};
+
